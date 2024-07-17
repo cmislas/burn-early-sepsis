@@ -1,3 +1,7 @@
 streamlit
 pandas
 joblib
+sqlalchemy
+joblib
+scikit-learn
+
