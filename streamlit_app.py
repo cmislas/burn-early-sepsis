@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 import gzip
-from sklearn.ensemble import RandomForestClassifier
 
 @st.cache_data
 def load_data():
@@ -16,30 +15,35 @@ def load_model():
 
 def main():
     st.title("Early Sepsis Detection for Burn Patients")
-    
+
     data = load_data()
-    st.subheader("Patient Data")
-    st.write(data)
-    
+    model = load_model()
+
     features = ['HR', 'Temp', 'Hour', 'WBC', 'MAP']
     X = data[features]
 
-    model = load_model()
-    predictions = model.predict(X)
+    # Make predictions
+    predictions = model.predict_proba(X)[:, 1]  # Get probability of positive class
     data['Sepsis Risk'] = predictions
 
-    st.subheader("Predictions")
-    st.write(data[['HR', 'Temp', 'Hour', 'WBC', 'MAP', 'Sepsis Risk']])
+    # Sort by sepsis risk in descending order and get top 5 patients
+    top_5_patients = data.nlargest(5, 'Sepsis Risk')
 
-    st.subheader("Sepsis Risk Count")
-    st.bar_chart(data['Sepsis Risk'].value_counts())
+    st.subheader("Top 5 Patients at Risk of Sepsis")
+    st.write(top_5_patients[['HR', 'Temp', 'Hour', 'WBC', 'MAP', 'Sepsis Risk']])
 
-    st.subheader("Feature Distribution")
-    for feature in features:
-        st.write(f"Distribution of {feature}")
-        st.bar_chart(data[feature])
+    st.subheader("Patient Data")
+    st.write(data)
+
+    st.subheader("Feature Importance")
+    feature_importance = pd.DataFrame({
+        'Feature': features,
+        'Importance': model.feature_importances_
+    }).sort_values(by='Importance', ascending=False)
+    st.bar_chart(feature_importance.set_index('Feature'))
 
 if __name__ == "__main__":
     main()
+
 
 
