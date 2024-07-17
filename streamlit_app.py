@@ -5,7 +5,7 @@ import joblib
 
 @st.cache_data
 def load_data():
-    return pd.read_csv('database3.csv')
+    return pd.read_csv('sepsis3.csv')
 
 @st.cache_resource
 def load_model():
